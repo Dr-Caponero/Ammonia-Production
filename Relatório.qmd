@@ -68,13 +68,18 @@ dados <- dados|>
 dados1 <- dados|>
   mutate(
     acid_conc = acid_conc/10+50,
-    stack_loss = stack_loss/10,
+    stack_loss = stack_loss/10
   )
 ```
 
 
-# Introdução
+# Apresentação
 
+O relatório desta semana está dividido em duas atividades.
+
+# Atividade 1
+
+## Introdução
 Com base nos dados disponibilizados no *dataset* "stackloss" (do R base), que apresenta dados de 21 dias de operação de um indústria que realiza oxidação de amônia ($NH_3$) em ácido nítrico ($HNO_3$). O ácido nítrico produzido é absorvido na torre de absorção contracorrente. As informações disponíveis na base de dados referem-se a: 
 
 -**Air fow**: que representa a taxa de operação da indústria (corrente de ar refrigerado);  
@@ -90,9 +95,9 @@ Com base nestes dados, objetiva-se:
 
 2. Avaliar a partir de regressão parcial e dos resíduos parciais as variáveis no modelo, bem como o pressuposto de normalidade do resíduos.
 
-# Resultados
+## Resultados
 
-## Análise descritiva dos dados
+### Análise descritiva dos dados
 
 
 
@@ -198,7 +203,7 @@ b1 + b2 + b3 + b4 +
 
 
 
-## Modelo de Regressão Linear Multipla  
+### Modelo de Regressão Linear Multipla  
 
 O modelo obtido pode ser representado por:
 
@@ -427,11 +432,11 @@ A Figura 2A apresenta um comportamento simétrico dos resíduos, podendo ser con
 
 
 
-## Gráficos de Diagnóstico
+### Gráficos de Diagnóstico
 
 A análise dos gráficos de diagnóstico permite avaliar as observações realizadas e conhecer a influência de cada uma delas para o madelo de regressão proposto. Assim, com base no modelo, é possível fazer as seguintes análises:
 
-**Figura 2: Valores Ajustados e Resíduos Studentizados**
+**Figura 3: Valores Ajustados e Resíduos Studentizados**
 
 ```{r }
 #| echo: false
@@ -451,12 +456,12 @@ for (i in 1:21) {
 } 
 
 ```
-A Figura 2 demonstra que os resíduos estão todos dentro dos limites esperados, com exceção da observação 7 que por pouco ultrapassou o limite inferior. Não parece ser o caso de nenhuma intervenção por conta deste valor.  
-
-\newpage
+A Figura 3 demonstra que os resíduos estão todos dentro dos limites esperados, com exceção da observação 21 que por pouco ultrapassou o limite inferior. Não parece ser o caso de nenhuma intervenção por conta deste valor.  
 
 
-**Figura 3: Valores Ajustados e Resíduos Padronizados.**
+
+
+**Figura 4: Valores Ajustados e Resíduos Padronizados.**
 
 ```{r }
 #| echo: false
@@ -472,9 +477,9 @@ for (i in 1:21) {
 }
 ```
 
-Já a análise da Figura 3, onde os resíduos foram padronizados, o número de observações que ultrapassaram os limites chegou a 4,8% do total o que é condizente com uma confiança de 95%.  
+Na análise da Figura 4, onde os resíduos foram padronizados, verifica-se que apenas a observação 21 está fora do limite de aceitação.  
 
-**Figura 4: Análise dos quantis teóricos e amostrais**
+**Figura 5: Análise dos quantis teóricos e amostrais**
 
 ```{r fig3:analise_residuos}
 #| echo: false
@@ -486,11 +491,10 @@ ols_plot_resid_qq(mFit1)
 
 ```
 
-A Figura 4 apresentou um bom ajuste dos resíduos à distribuição normal, sendo um pouco pior nas caudas da distribuição por uma qauntidade pequena de pontos.  
+A Figura 5 apresentou um bom ajuste dos resíduos à distribuição normal, sendo apenas um pouco pior nas caudas da distribuição.  
 
-\newpage
 
-**Figura 5: Distância de Cook.**
+**Figura 6: Distância de Cook.**
 
 ```{r fig4:Cook}
 #| echo: false
@@ -507,9 +511,9 @@ for (i in 1:21) {
 }
 ```
 
-A analise da distância de Cook apresentada na Figura 5 demonstra que 25 (6,6%) observações tem uma distância expressiva, mas apenas sete deles estão acima da distância de 0,025. O tretamento destes pontos pode manter os resíduos dentro do esperado com uma confiança de 95%.  
+A analise da distância de Cook apresentada na Figura 6 demonstra que novamente apenas a observação 21 destoa do conjunto de observações e tem uma distância expressiva.  
 
-**Figura 6: Análise dos pontos de Alavanca e Resíduo Studentizado.**
+**Figura 7: Análise dos pontos de Alavanca e Resíduo Studentizado.**
 
 ```{r }
 #| echo: false
@@ -526,11 +530,10 @@ for (i in 1:21) {
 }
 ```
 
-Pela Figura 6, observamos 15 observações que podem ser consideradas como *Outliers* e 21 como observações de alavanca, além de 3 com as duas características, o que representa um total de 10,3% das observações. Uma quantidade tão expressiva de dados não pode ser descartada sem o amparo de um especialista na área.  
+Pela Figura 7, observamos 2 observações que podem ser consideradas como *Outliers* e uma como ponto de  alavanca. Interessante notar que apesar da observação 21 ter aparecido nos gráficos anteriores como uma observação anômala, aqui ela é classificada como um *outlier* o que denota uma influência menos prejudicial que a da observação 17 que aparece pela primeira vez.
 
-\newpage
 
-**Figura 7: DFBetas para as variáveis do modelo.**
+**Figura 8: DFBetas para as variáveis do modelo.**
 
 ```{r }
 #| echo: false
@@ -558,9 +561,9 @@ for (i in 1:21) {
 
 ```
 
-A Figura 7 apresenta os DFBetas para cada uma das variáveis utilizadas no modelo, com uma média de 6,1% de observações discrepantes com cerca de 4 observações críticas, isto é, valores mais extemos. O tratamento destas observações podem trazer o modelo para uma situação mais compatível com a confiança estabelecida.  
+A Figura 8 apresenta os DFBetas para cada uma das variáveis utilizadas no modelo. Nota-se que mais uma vez a observação 21 tem comportamento anômalo.
 
-**Figura 8: DfFit para as variáveis do modelo.**
+**Figura 9: DfFit para as variáveis do modelo.**
 
 ```{r }
 #| echo: false
@@ -578,10 +581,10 @@ for (i in 1:21) {
 
 ```
 
-A Figura 8 acompanha os gráficos anteriores apresentando 6,9% de observações discrepantes, mas apenas seis valores são extremos, desta forma pode-se da mesma forma tratá-los e manter a confiança do modelo.
+A Figura 9 acompanha os gráficos anteriores apresentando mais uma vez a observação 21 como discrepante.
 
 
-**Figura 9: COVRatio para as variáveis do modelo.**
+**Figura 10: COVRatio para as variáveis do modelo.**
 
 ```{r }
 #| echo: false
@@ -592,12 +595,12 @@ A Figura 8 acompanha os gráficos anteriores apresentando 6,9% de observações 
 car::crPlots(mFit1)
 ```
 
-Da Figura 9 verifica-se que as variáveis "Altura", "Cintura" e "Quadil" estão mais diretamente correlacionadas com os resíduos do "Peso", o que por sua vez indica que a inclusão de observações destas variáveis apresentam maior impacto ao modelo.
+Da Figura 10 verifica-se que as variáveis estão  diretamente correlacionadas com os resíduos da Amônia Perdida, o que por sua vez indica que a inclusão de observações destas variáveis apresentam bom impacto ao modelo.
 
 
 ### Eliminação de observações anômalas
 
-Avaliando as observações que apresentaram comportamento anômalo nos diagnósticos dos valores ajustados e resíduos studentizados, valores ajustados e resíduos padronizados, distância de CooK, pontos de alavanca e *outliers*, análise de DfFit e todas as análises de BFBetas, chegamos as frequências de observações anômalas apresentadas na Figura 10.
+Avaliando as observações que apresentaram comportamento anômalo nos diagnósticos dos valores ajustados e resíduos studentizados, valores ajustados e resíduos padronizados, distância de CooK, pontos de alavanca e *outliers*, análise de DfFit e todas as análises de BFBetas, chegamos as frequências de observações anômalas apresentadas na Figura 11.
 ```{r }
 #| echo: false
 #| warning: false
@@ -614,7 +617,7 @@ principais|>
     color = "#234B6E"
     )+
   labs(
-    title = "Figura 10: Número de ocorrências para cada observação",
+    title = "Figura 11: Número de ocorrências para cada observação",
     y = 'Ocorrências',
     x = 'Observação'
   )+
@@ -670,43 +673,46 @@ R2_aju <- round(1 - (SQRes/(n - 12))/(SQTot/(n -1)),3)
 ```
 
 
-$Y_{i}^¤ =$ `r round(betas[1],3)`$+$ `r round(betas[2],3)` $X_{1i}^¤ +$ `r round(betas[3],3)` $X_{2i}^¤$ `r round(betas[4],3)` $X_{3i}^¤$ 
+$Y_{i}^* =$ `r round(betas[1],3)`$+$ `r round(betas[2],3)` $X_{1i}^* +$ `r round(betas[3],3)` $X_{2i}^*$ `r round(betas[4],3)` $X_{3i}^*$ 
 
 Onde:    
-$Y_{i}^¤$ - Peso;  
-$X_{1i}^¤$ - Colesterol total;  
-$X_{2i}^¤$ - Glicose estabilizada;  
-$X_{3i}^¤$ - Lipoproteína de alta densidade;  
+$Y_{i}^*$ - Amônia Perdida;  
+$X_{1i}^*$ - Fluxo de Ar;  
+$X_{2i}^*$ - Temperatura da Água;  
+$X_{3i}^*$ - Concentração de HNO3; 
 
 Neste novo modelo o coeficiente de determinação calculado foi de $R^2=$ `r R2`, o que denota que `r R2*100`% da variância dos dados é explicada pelo modelo. O valor deste novo coeficiente permite concluir que a eliminação das observações com maior impacto no modelo foi benéfica. Pode-se calcular o coeficiente de determinação ajustado igual a $R^2_a=$ `r R2_aju`
 
 
-# Conclusões
+## Conclusões
 
-Verificou-se que a análise de variâncias foi um teste mais poderoso para identificar variáveis desnecessárias ao modelo que a analise individual das significancias das variáveis ao modelo.   
+<!-- Verificou-se que a análise de variâncias foi um teste mais poderoso para identificar variáveis desnecessárias ao modelo que a analise individual das significancias das variáveis ao modelo.    -->
 
-Embora se não se tenha um conhecimento específico da área estudada, foi possível realizar uma avaliação dos dados recebidos e propor um tratamento que efetivamente melhorou o modelo de regressão linear multipla realizado.  
+<!-- Embora se não se tenha um conhecimento específico da área estudada, foi possível realizar uma avaliação dos dados recebidos e propor um tratamento que efetivamente melhorou o modelo de regressão linear multipla realizado.   -->
 
-As anomalias relatadas em cada um dos gráficos de diagnóstico elaborados foram tratadas de igual maneira contabilizando para cada observação o número de ocorrências observadas. Por este método se elencou as observações com maior potencial de prejuízo ao modelo e ao descartá-las do rol de dados avaliados obteve-se uma expressiva melhora no modelo.
+<!-- As anomalias relatadas em cada um dos gráficos de diagnóstico elaborados foram tratadas de igual maneira contabilizando para cada observação o número de ocorrências observadas. Por este método se elencou as observações com maior potencial de prejuízo ao modelo e ao descartá-las do rol de dados avaliados obteve-se uma expressiva melhora no modelo. -->
 
+# Atividade 2
 
+## Introdução
 
+Para análise dos dados diários sobre evaporação do solo (EVAP), Freund (1979) identificou as seguintes variáveis preditoras:   
+-**MAXAT** - temperatura do ar diária máxima;  
+-**MINAT** - temperatura do ar diária mínima;  
+-**AVAT** - medida de temperatura média do ar;  
+-**MAXST** - temperatura máxima diária do solo;  
+-**MINST** - temperatura mínima diária do solo;  
+-**AVST** - medida de temperatura média do solo;  
+-**MAXH** - umidade relativa diária máxima;  
+-**MINH** - umidade relativa diária mínima;  
+-**AVH** - umidade relativa diária média;  
+-**WIND** - vento total, medido em milhas por dia.  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Com base nestes dados, objetiva-se:  
+1. Ajustar um modelo completo sobre evaporação do solo (EVAP), definindo os fatores significativamente associados, o coeficiente de determinação, a avaliação da bondade do modelo completo.  
+2. Determinar a correlação entre todos os preditores e a resposta. Realisando uma análise dos resíduos e dos pontos de alavanca e influentes.   
+3. Investigar possíveis problemas de colinearidade, avaliando o $R^2_j$ para cada preditor e seu VIF.  
+4. Melhorar o modelo pela exclusão de obseervações anômalas e pela definição de variáveis preditoras a serem incluídas no modelo.  
 
 
 ```{r dados2}
@@ -717,7 +723,233 @@ As anomalias relatadas em cada um dos gráficos de diagnóstico elaborados foram
 dados <- read.csv("Lab07.txt", sep ="\t")
 
 ### Arrumação ----
-dados <- dados|>
+dados2 <- dados|>
   janitor::clean_names()
+dados2 <- dados2[,-c(1,2,3)]
 ```
+
+
+## Resultados
+
+### Análise descritiva dos dados
+
+```{r tab5:MedRes}
+#| echo: false
+#| warning: false
+
+dados2|>
+  rename(
+  "Temperatura do ar máxima" = maxat,  
+  "Temperatura do ar mínima" = minat,
+  "Temperatura média do ar" = avat,
+  "Temperatura máxima do solo" = maxst,
+  "Temperatura mínima do solo" = minst,
+  "Temperatura média do solo" = avst,
+  "Umidade relativa máxima" = maxh,
+  "Umidade relativa mínima" = minh,
+  "Umidade relativa média" = avh,
+  "Vento total" = wind,
+  "Evaporação do Solo" = evap 
+  )|>
+  summarytools::descr(
+    stats = c("min", "q1", "med", "mean","q3", "max",  "sd", "cv", "Skewness", "Kurtosis"),
+    justify = "c",
+    style = "rmarkdown",
+    transpose = T
+  )|>
+  kbl(
+    caption = "Medidas Resumo dos dados",
+    digits = 2,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c", 
+    row.names = T, 
+    booktabs = T
+  )|>
+  column_spec(1, bold = T)|>
+  kable_styling(
+    full_width = F,
+    position = 'center', 
+    latex_options = c("striped", "HOLD_position", "scale_down")
+  )|>
+  kable_material()
+```
+
+
+
+```{r fig11:BoxPlot}
+#| echo: false
+#| warning: false
+#| fig-height: 6
+#| fig-width: 6
+
+# BoxPlot ----
+{
+## b1 maxat----
+b1 <- dados2|>
+  ggplot(aes(y = maxat)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Temperatura \n do ar máxima",
+    x = "",
+    y = "ºC"
+  )+theme_minimal(base_size = 7.5)
+
+## b2 minat ----
+b2 <- dados2|>
+  ggplot(aes(y = minat)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Temperatura \n do ar mínima",
+    x = "",
+    y = "ºC"
+  )+theme_minimal(base_size = 7.5)
+
+## b3 avat ----
+b3 <- dados2|>
+  ggplot(aes(y = avat)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Temperatura \n média do ar",
+    x = "",
+    y = "ºC"
+  )+theme_minimal(base_size = 7.5)
+
+## b4 maxst ----
+b4 <- dados2|>
+  ggplot(aes(y = maxst)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Temperatura \n máxima do solo",
+    x = "",
+    y = "ºC"
+  )+theme_minimal(base_size = 7.5)
+
+## b5 minst ----
+b5 <- dados2|>
+  ggplot(aes(y = minst)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Temperatura \n mínima do solo",
+    x = "",
+    y = "ºC"
+  )+theme_minimal(base_size = 7.5)
+
+## b6 avst ----
+b6 <- dados2|>
+  ggplot(aes(y = avst)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Temperatura \n média do solo",
+    x = "",
+    y = "ºC"
+  )+theme_minimal(base_size = 7.5)
+
+## b7 maxh ----
+b7 <- dados2|>
+  ggplot(aes(y = maxh)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Umidade \n relativa máxima",
+    x = "",
+    y = "Porcentagem"
+  )+theme_minimal(base_size = 7.5)
+
+## b8 minh ----
+b8 <- dados2|>
+  ggplot(aes(y = minh)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Umidade \n relativa mínima",
+    x = "",
+    y = "Porcentagem"
+  )+theme_minimal(base_size = 7.5)
+
+## b9 avh ----
+b9 <- dados2|>
+  ggplot(aes(y = avh)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Umidade \n relativa média",
+    x = "",
+    y = "Porcentagem"
+  )+theme_minimal(base_size = 7.5)
+
+## b10 wind ----
+b10 <- dados2|>
+  ggplot(aes(y = wind)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Vento total",
+    x = "",
+    y = "Milhas por dia"
+  )+theme_minimal(base_size = 7.5)
+
+## b11 evap ----
+b11 <- dados2|>
+  ggplot(aes(y = evap)) +
+  geom_boxplot(col="darkblue", fill="skyblue", alpha = 0.5)+
+  labs(
+    title = "Evaporação \n do Solo",
+    x = "",
+    y = "Litros por dia"
+  )+theme_minimal(base_size = 7.5)
+
+b1 + b2 + b3 + b4 + b5 + b6 + b7 + b8 + b9 + b10 + b11 +
+  plot_layout(ncol = 4) + 
+  plot_annotation(
+    title = "Figura 1: BoxPlot das variáveis em análise.",
+    tag_levels = c("A", "1"))&
+   theme(
+     legend.position = "none",
+     plot.tag.position = c(1, 0),
+     plot.tag = element_text(size = 12, hjust = 1, vjust = -2.2)
+   )
+}
+
+```
+
+
+
+
+### Modelo de Regressão Linear Multipla  
+
+O modelo obtido pode ser representado por:
+
+```{r }
+#| echo: false
+#| warning: false
+
+n <- length(dados2$evap)
+Y <- as.matrix(dados2$evap)
+X <- as.matrix(dados2[,-11])
+X <- cbind(1,X)
+betas <- (solve(t(X) %*% X)) %*% t(X) %*% Y
+H = X %*% (solve(t(X) %*% X)) %*% t(X)
+J <- matrix(1,n,n)
+SQRes <- t(Y) %*% Y - t(betas) %*% t(X) %*% Y
+SQReg <- t(betas) %*% t(X) %*% Y - (1/n)*t(Y) %*% J %*% Y
+SQTot <- SQReg + SQRes
+
+R2 <- round(SQReg/SQTot,3)
+R2_aju <- round(1 - (SQRes/(n - 12))/(SQTot/(n -1)),3)
+```
+
+
+$Y_{i}=$`r round(betas[1],3)` $+$ `r round(betas[2],3)` $X_{1i}$ `r round(betas[3],3)` $X_{2i}$ `r round(betas[4],3)` $X_{3i}+$ `r round(betas[5],3)` $X_{4i} +$ `r round(betas[6],3)` $X_{5i} +$ `r round(betas[7],3)` $X_{6i}$ `r round(betas[8],3)` $X_{7i}$ `r round(betas[9],3)` $X_{8i} +$ `r round(betas[10],3)` $X_{9i} +$ `r round(betas[11],3)` $X_{10i}$  
+
+Onde:    
+$Y_{i}$ - Evaporação do Solo;  
+$X_{1i}$ - Temperatura do ar máxima;  
+$X_{2i}$ - Temperatura do ar mínima;  
+$X_{3i}$ - Temperatura do ar média;  
+$X_{4i}$ - Temperatura do solo máxima;  
+$X_{5i}$ - Temperatura do solo mínima;  
+$X_{6i}$ - Temperatura do solo média;  
+$X_{7i}$ - Umidade relativa máxima;  
+$X_{8i}$ - Umidade relativa mínima;  
+$X_{9i}$ - Umidade relativa média;  
+$X_{10i}$ - Vento Total;
+
+
+Interpretando-se o modelo pode-se dizer que para cada variável, fixadas as demais condições (_Ceteris Paribus_), temos que a porcentagem de amônia perdida é de 3,614% caso todas as demais varíáveis tenham valor zero. Há um aumento de 0,072% na perda de amônia para cada metro cúbico de ar introduzido. O aumento de cada grau Ceusius da temperatura da água provoca uma aumento de 0,13% de aumento na perda de amônia. O aumento em 1g/L na concentração do ácido nítrico reduz em 0,152% a perda de amônia. Neste modelo o coeficiente de determinação calculado foi de $R^2=$ `r R2`, o que denota que `r R2*100`% da variância dos dados é explicada pelo modelo. Pode-se calcular o coeficiente de determinação ajustado igual a $R^2_a=$ `r R2_aju`.  
 
