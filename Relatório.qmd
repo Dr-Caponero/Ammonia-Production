@@ -897,7 +897,7 @@ b11 <- dados2|>
 b1 + b2 + b3 + b4 + b5 + b6 + b7 + b8 + b9 + b10 + b11 +
   plot_layout(ncol = 4) + 
   plot_annotation(
-    title = "Figura 1: BoxPlot das variáveis em análise.",
+    title = "Figura 12: BoxPlot das variáveis em análise.",
     tag_levels = c("A", "1"))&
    theme(
      legend.position = "none",
@@ -951,5 +951,560 @@ $X_{9i}$ - Umidade relativa média;
 $X_{10i}$ - Vento Total;
 
 
-Interpretando-se o modelo pode-se dizer que para cada variável, fixadas as demais condições (_Ceteris Paribus_), temos que a porcentagem de amônia perdida é de 3,614% caso todas as demais varíáveis tenham valor zero. Há um aumento de 0,072% na perda de amônia para cada metro cúbico de ar introduzido. O aumento de cada grau Ceusius da temperatura da água provoca uma aumento de 0,13% de aumento na perda de amônia. O aumento em 1g/L na concentração do ácido nítrico reduz em 0,152% a perda de amônia. Neste modelo o coeficiente de determinação calculado foi de $R^2=$ `r R2`, o que denota que `r R2*100`% da variância dos dados é explicada pelo modelo. Pode-se calcular o coeficiente de determinação ajustado igual a $R^2_a=$ `r R2_aju`.  
+Interpretando-se o modelo pode-se dizer que para cada variável, fixadas as demais condições (_Ceteris Paribus_), temos que: 
 
+::: incrementyal
+-  a evaporação total é de 117,578L caso todas as demais varíáveis tenham valor zero;  
+-  um aumento de 240mL na evaporação para cada grau Ceusius na temperatura máxima do ar;   
+-  uma redução de 1,318L na evaporação para cada grau Ceusius na temperatura mínima do ar;  
+-  uma redução de 116mL na evaporação para cada grau Ceusius na temperatura média do ar;  
+-  um aumento de 336mL na evaporação para cada grau Ceusius na temperatura máxima do solo;  
+-  um aumento de 10mL na evaporação para cada grau Ceusius na temperatura mínima do solo;  
+-  um aumento de 495mL na evaporação para cada grau Ceusius na temperatura média do solo;  
+-  uma redução de 877mL na evaporação para ponto porcentual de umidade relativa máxima;   
+-  uma redução de 823mL na evaporação para ponto porcentual de umidade relativa mínima;   
+-  um aumento de 8mL na evaporação para ponto porcentual de umidade relativa média;   
+-  um aumento de 16mL na evaporação para cada milha de vento total.    
+:::
+
+Neste modelo o coeficiente de determinação calculado foi de $R^2=$ `r R2`, o que denota que `r R2*100`% da variância dos dados é explicada pelo modelo. Pode-se calcular o coeficiente de determinação ajustado igual a $R^2_a=$ `r R2_aju`.  
+
+
+
+### Testes de Diagnósticos do Modelo
+
+Para avaliar se o modelo atende aos pressupostos, além da análise gráfica podem ser realizados testes de diagnósticos, que são testes de hipóteses para avaliação dos pressupostos que são:
+
+- Normalidade;
+
+  $H_0:$ Os resíduos possuem normalidade.
+
+  $H_1:$ Os resíduos **não** possuem normalidade.
+
+- Homoscedasticidade (Homogeneidade de Variância);
+
+  $H_0:$ Os resíduos possuem variância constante.
+
+  $H_1:$ Os resíduos **não** possuem variância constante.
+
+- Linearidade;
+- Independência.
+
+  $H_0$: Existe correlação serial entre os resíduos.
+  
+  $H_1$: **Não** existe correlação serial entre os resíduos.
+
+Para tanto serão utilizados os seguintes testes:
+
+- Shapiro-Wilk, para avaliar a Normalidade;
+- Breush-Pagan, para avaliar a Homoscedasticidade;
+- Durbin-Watson, para avaliar a Independência.
+
+
+```{r tab4:teste-diagnostico}
+#| echo: false
+#| warning: false
+
+
+mFit2 <- lm(evap ~ maxat + minat + avat + maxst + minst + avst + maxh + minh + avh + wind, data = dados2)
+res2 <- residuals(mFit2)
+
+##### Teste de normalidade dos resíduos ----
+  #H0: normalidade
+  #H1: não normalidade
+
+# SW*
+t_sw <- shapiro.test(res2)
+
+##### Teste de homoscedasticidade dos resíduos ----
+  #H0: resíduos homoscedásticos - Variância constante
+  #H1: resíduos heteroscedásticos - Variância NÃO constante
+
+# BP*
+t_bp <- lmtest::bptest(mFit2, studentize = F)
+
+# Teste deF para linearidade
+
+# Teste de correlação serial lag 1 (Independência dos erros)
+  #H0: correlacionados - existe correlação serial
+  #H1: não correlacionados - não existe correlação serial ///ficou confuso no vídeo as hipoteses///
+
+# DW
+t_dw <- lmtest::dwtest(mFit2)
+
+resultados <- round(rbind(
+  t_sw$statistic,
+  t_bp$statistic,
+  t_dw$statistic),4)
+
+aux <- rbind(
+  round(t_sw$p.value,4),
+  round(t_bp$p.value,4),
+  "<0,0001")
+
+resultados <- cbind(resultados, aux)
+
+rownames(resultados) <- c("Shapiro-Wilk", "Breush-Pagan", "Durbin-Watson")
+
+colnames(resultados) <- c("Estatística de teste", "p-valor")
+
+resultados|>
+  kbl(
+    caption = "Testes de Diagnósticos dos Resíduos",
+    digits = 5,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c", row.names = T, booktabs = T
+  )|>
+  kable_styling(
+    full_width = F, position = 'center', 
+    latex_options = c("striped", "HOLD_position", "repeat_header")
+  )|>
+  column_spec(1, bold = T)|>
+  kable_material()
+```
+
+A Tabela 6 traz os testes de diagnósticos realizados para avaliar o modelo de regressão ajustado, conforme análise gráfica dos resíduos há a confirmação tanto da normalidade quanto da homocedasticidade de variância conforme os p-valores obtido pelos testes realizados (acima de 0,05). Porém nota-se que há dependência entre as características confirmado pelo p-valor do teste de Durbin-Watson (<0,0001), que leva a rejeição da hipótese nula ($H_0$). Este codependência era esperada uma vez que os valores médios de tempeartura e unidade relariva tem relação com seus respectivos valores máximos e mínimos. O que pode ser conferdo na matriz de correlação a seguir:
+
+
+
+
+
+```{r correlação}
+#| echo: false
+#| warning: false
+#| tbl-colum: page
+#| fig-pos: H
+
+b1 <- cor(dados2)
+rownames(b1) <- c("Temperatura do ar máxima","Temperatura do ar mínima",
+                  "Temperatura média do ar","Temperatura máxima do solo",
+                  "Temperatura mínima do solo","Temperatura média do solo",
+                  "Umidade relativa máxima", "Umidade relativa mínima",
+                  "Umidade relativa média", "Vento total", "Evaporação do Solo")
+
+b1 <- as.data.frame(b1[,11])
+colnames(b1) <- c("Evaporação do Solo")
+
+b1|>
+  kbl(
+    caption = "Matriz de correlação das variáveis do modelo",
+    digits = 3,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c", row.names = T, booktabs = T
+  )|>
+  kable_material(c("striped", "hover", "condensed"))|>
+  kable_styling(
+    bootstrap_options = c("striped", "hover",  "condensed"),
+    full_width = F,
+    position = 'center', 
+    latex_options = c("striped", "HOLD_position", "repeat_header")
+  ) |>
+  column_spec(1, bold = T)|>
+  kable_material()
+```
+
+### Análise de Resíduos
+
+```{r fig13:analise_residuos}
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 6
+
+
+mFit2_resid <- broom::augment(mFit2)
+
+####  Gráfico de Resíduos contra Valor Médio
+d1 <- mFit2_resid|>
+ ggplot(aes(x = .fitted, y = rstudent(mFit2))) + 
+  geom_point(color = "#234B6E") +
+  geom_hline(aes(yintercept = 0), col="tomato")+
+  labs(
+    x = "Valores Ajustados",
+    y = "Resíduos Estudentizados",
+    title = "Resíduos Estudentizados vs. \nValores Ajustados")+
+  scale_x_continuous(
+    labels = scales::number_format(
+      big.mark = ".", decimal.mark = ","))+
+  scale_y_continuous(
+    breaks = seq(from = -3, to = 4, by = 1),
+    labels = scales::number_format(
+      big.mark = ".", decimal.mark = ","))+
+  theme_minimal()+
+  theme(
+    legend.position = "none",
+    plot.title = element_text(size = 11, face = "plain"),
+    axis.title = element_text(size = 8, face = "plain"),
+    axis.line = element_line(size = 0.5, color = "#222222"))
+
+####  Gráfico de normalidade dos resíduos
+ d2 <- mFit2_resid %>%
+   ggplot(aes(sample = .std.resid)) +
+   qqplotr::stat_qq_band(alpha = 0.3) +
+   qqplotr::stat_qq_point(color = "#234B6E") +
+   qqplotr::stat_qq_line(linetype = 2, size = 0.2) +
+   labs(
+     x = "Quantil Teórico",
+     y = "Quantil Amostral",
+     title = "Gráfico quantil-quantil normal"
+   )+
+    scale_x_continuous(breaks = seq(-3,3,1))+
+   scale_x_continuous(
+     labels = scales::number_format(
+       big.mark = ".", decimal.mark = ","))+
+   scale_y_continuous(
+     labels = scales::number_format(
+       big.mark = ".", decimal.mark = ","))+
+   theme_minimal()+
+   theme(
+     legend.position = "none",
+     plot.title = element_text(size = 11, face = "plain"),
+     axis.title = element_text(size = 8, face = "plain"),
+     axis.line = element_line(size = 0.5, color = "#222222"))
+
+#### Gráfico Homogeneidade de Variâncias (Locação-Escala) ----
+ d3 <- mFit2_resid %>%
+   ggplot(aes(x = .fitted, y = sqrt(abs(.std.resid)))) +
+   geom_point(color = "#234B6E") +
+   geom_smooth(
+     se = T, color = "tomato", method = 'loess', formula = 'y ~ x')+
+   labs(
+     x = "Valores Ajustados",
+     y = expression(sqrt("|Resíduos Padronizados|")),
+     title = "Homogeneidade de Variâncias \n(Locação-Escala)")+
+   scale_x_continuous(
+     labels = scales::number_format(
+       big.mark = ".", decimal.mark = ","))+
+   scale_y_continuous(
+     labels = scales::number_format(
+       big.mark = ".", decimal.mark = ","))+
+   theme_minimal()+
+   theme(
+     legend.position = "none",
+     plot.title = element_text(size = 11, face = "plain"),
+     axis.title = element_text(size = 8, face = "plain"),
+     axis.line = element_line(size = 0.5, color = "#222222"))
+
+ d1 + d2 + d3 +
+   plot_layout(ncol = 2) +
+   plot_annotation(
+   title = "Figura 13: Análise de resíduos do modelo ajustado",
+   tag_levels = c("A", "2"))&
+   theme(
+     legend.position = "none",
+     plot.tag.position = c(1, 0),
+     plot.tag = element_text(size = 12, hjust = 1, vjust = -3)
+   )
+
+
+```
+
+
+
+A Figura 13A apresenta um comportamento simétrico dos resíduos, podendo ser constatado uma pequena variabilidade inicial e um aumento desta à medida que os valores ajustados aumentam, caracterizando uma baixa heterocedasticidade. A Figura 13C, que trata da Homogeneidade de Variâncias (Locação-Escala) ressalta que há um problema na variabilidade dos dados, ampliando a interpretação feita na análise da Figura 2A, de que há uma mudança na variabilidade dos dados, caracterizando uma certa heterocedasticidade dos dados. A Figura 13B traz o gráfico para avaliação da normalidade dos dados, mostra que apesar dos dados não estarem precisamente sobre a reta de referência, os mesmos estão contidos na região pertencente ao Intervalo de Confiança - IC, podendo assumir que há normalidade.
+
+
+
+
+### Gráficos de Diagnóstico
+
+A análise dos gráficos de diagnóstico permite avaliar as observações realizadas e conhecer a influência de cada uma delas para o madelo de regressão proposto. Assim, com base no modelo, é possível fazer as seguintes análises:
+
+**Figura 14: Valores Ajustados e Resíduos Studentizados**
+
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 3
+
+
+aaa <- ols_plot_resid_stud(mFit2)
+discrepantes <- NULL
+discrepantes[1:46] <- 0
+
+for (i in 1:46) {
+  if (!is.na(aaa[["data"]][["txt"]][i])) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }  
+} 
+
+```
+A Figura 14 demonstra que os resíduos estão todos dentro dos limites esperados, com exceção da observação 21 que por pouco ultrapassou o limite inferior. Não parece ser o caso de nenhuma intervenção por conta deste valor.  
+
+
+
+
+**Figura 15: Valores Ajustados e Resíduos Padronizados.**
+
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 3
+aaa <- ols_plot_resid_stand(mFit2)
+
+for (i in 1:46) {
+  if (!is.na(aaa[["data"]][["txt"]][i])) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }  
+}
+```
+
+Na análise da Figura 15, onde os resíduos foram padronizados, verifica-se que apenas a observação 21 está fora do limite de aceitação.  
+
+**Figura 16: Análise dos quantis teóricos e amostrais**
+
+```{r fig16:analise_residuos}
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 3
+
+ols_plot_resid_qq(mFit2)
+
+```
+
+A Figura 16 apresentou um bom ajuste dos resíduos à distribuição normal, sendo apenas um pouco pior nas caudas da distribuição.  
+
+
+**Figura 17: Distância de Cook.**
+
+```{r fig17:Cook}
+#| echo: false
+#| warning: false
+#| fig-height: 3
+#| fig-width: 7
+
+aaa <- ols_plot_cooksd_chart(mFit2)
+
+for (i in 1:46) {
+  if (!is.na(aaa[["data"]][["txt"]][i])) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }  
+}
+```
+
+A analise da distância de Cook apresentada na Figura 17 demonstra que novamente apenas a observação 21 destoa do conjunto de observações e tem uma distância expressiva.  
+
+**Figura 18: Análise dos pontos de Alavanca e Resíduo Studentizado.**
+
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 3
+
+aaa <- ols_plot_resid_lev(mFit2)
+
+for (i in 1:46) {
+  if (!is.na(aaa[["data"]][["txt"]][i])) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }  
+}
+```
+
+Pela Figura 18, observamos 2 observações que podem ser consideradas como *Outliers* e uma como ponto de  alavanca. Interessante notar que apesar da observação 21 ter aparecido nos gráficos anteriores como uma observação anômala, aqui ela é classificada como um *outlier* o que denota uma influência menos prejudicial que a da observação 17 que aparece pela primeira vez.
+
+
+**Figura 19: DFBetas para as variáveis do modelo.**
+
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 8
+
+ols_plot_dfbetas(mFit2)
+
+
+showcases<-data.frame(dfbetas(mFit2))
+showcases$ID<-rownames(showcases)
+
+for (i in 1:46) {
+  if (abs(showcases$maxat[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$minat[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$avat[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$maxst[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$minst[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$avst[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$maxh[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$minh[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$avh[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+  if (abs(showcases$wind[i])>.29) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }
+}
+```
+
+A Figura 19 apresenta os DFBetas para cada uma das variáveis utilizadas no modelo. Nota-se que mais uma vez a observação 21 tem comportamento anômalo.
+
+**Figura 20: DfFit para as variáveis do modelo.**
+
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 3
+
+aaa <- ols_plot_dffits(mFit2)
+
+for (i in 1:46) {
+  if (!is.na(aaa[["data"]][["txt"]][i])) {  
+    discrepantes[i] <- discrepantes[i]+1
+  }  
+}
+
+```
+
+A Figura 20 acompanha os gráficos anteriores apresentando mais uma vez a observação 21 como discrepante.
+
+
+**Figura 21: COVRatio para as variáveis do modelo.**
+
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 9
+
+car::crPlots(mFit2)
+```
+
+Da Figura 21 verifica-se que as variáveis estão  diretamente correlacionadas com os resíduos da Amônia Perdida, o que por sua vez indica que a inclusão de observações destas variáveis apresentam bom impacto ao modelo.
+
+
+###$R^2_j$ e VIF dos Preditores
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 9
+
+aux <- colnames(dados2)
+
+R2_j <- NULL
+VIF <- NULL
+R2_j[1:10] <- 0
+VIF[1:10] <- 0
+for (k in 1:10){
+  reg <- lm(aux[k]~aux[-c(k,11)], data = dados2)
+  R2_j[k] <- summary(reg)$r.squared
+  VIF[k] <- 1/(1-R2_j[k])
+}
+```
+
+
+### Eliminação de observações anômalas
+
+Avaliando as observações que apresentaram comportamento anômalo nos diagnósticos dos valores ajustados e resíduos studentizados, valores ajustados e resíduos padronizados, distância de CooK, pontos de alavanca e *outliers*, análise de DfFit e todas as análises de BFBetas, chegamos as frequências de observações anômalas apresentadas na Figura 11.
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 3
+
+principais <- as.data.frame(cbind(1:46, discrepantes))
+colnames(principais) <- c("Observação", "Ocorrências")
+
+### Ajuste do Modelo + Gráfico ----
+principais|>
+  ggplot(aes(x = Observação, y = Ocorrências)) +
+  geom_point(
+    color = "#234B6E"
+    )+
+  labs(
+    title = "Figura 22: Número de ocorrências para cada observação",
+    y = 'Ocorrências',
+    x = 'Observação'
+  )+
+  theme(legend.position = "none",
+          axis.line = element_line(size = 0.5, color = "#222222"))
+
+
+```
+
+Considerando apenas as observações com 2 ou mais ocorrências temos a Tabela a seguir.
+
+```{r }
+#| echo: false
+#| warning: false
+#| fig-width: 7
+#| fig-height: 3
+
+principais <- principais %>% filter(discrepantes>1)
+
+principais |>
+  kableExtra::kbl(
+    caption = "Observações com maior número de ocorrências.",
+    align = c("l", "c"), 
+    row.names = F, booktabs = T, escape = F
+  )|>
+  kable_styling(
+    full_width = F, position = 'center', 
+    latex_options = c("striped", "HOLD_position")
+  )|>
+   kable_material()
+
+```
+Podemos intuir que essas são as observações com maior impacto negativo no modelo. Logo, eliminando-as do conjunto de dados analizados chegamos a um novo modelo dado por:
+
+
+```{r }
+#| echo: false
+#| warning: false
+dados2 <- dados2[-principais$Observação,]
+n <- length(dados2$evap)
+Y <- as.matrix(dados2$evap)
+X <- as.matrix(dados2[,-c(11)])
+X <- cbind(1,X)
+betas <- (solve(t(X) %*% X)) %*% t(X) %*% Y
+H = X %*% (solve(t(X) %*% X)) %*% t(X)
+J <- matrix(1,n,n)
+SQRes <- t(Y) %*% Y - t(betas) %*% t(X) %*% Y
+SQReg <- t(betas) %*% t(X) %*% Y - (1/n)*t(Y) %*% J %*% Y
+SQTot <- SQReg + SQRes
+
+R2 <- round(SQReg/SQTot,3)
+R2_aju <- round(1 - (SQRes/(n - 12))/(SQTot/(n -1)),3)
+```
+
+
+$Y_{i}^*=$`r round(betas[1],3)` $+$ `r round(betas[2],3)` $X_{1i}^*$ `r round(betas[3],3)` $X_{2i}^* +$ `r round(betas[4],3)` $X_{3i}^*$ `r round(betas[5],3)` $X_{4i}^*$ `r round(betas[6],3)` $X_{5i}^* +$ `r round(betas[7],3)` $X_{6i}^*$ `r round(betas[8],3)` $X_{7i}^*$ `r round(betas[9],3)` $X_{8i}^* +$ `r round(betas[10],3)` $X_{9i}^* +$ `r round(betas[11],3)` $X_{10i}^*$  
+
+Onde:    
+$Y_{i}^*$ - Evaporação do Solo;  
+$X_{1i}^*$ - Temperatura do ar máxima;  
+$X_{2i}^*$ - Temperatura do ar mínima;  
+$X_{3i}^*$ - Temperatura do ar média;  
+$X_{4i}^*$ - Temperatura do solo máxima;  
+$X_{5i}^*$ - Temperatura do solo mínima;  
+$X_{6i}^*$ - Temperatura do solo média;  
+$X_{7i}^*$ - Umidade relativa máxima;  
+$X_{8i}^*$ - Umidade relativa mínima;  
+$X_{9i}^*$ - Umidade relativa média;  
+$X_{10i}^*$ - Vento Total;
+
+Neste novo modelo o coeficiente de determinação calculado foi de $R^2=$ `r R2`, o que denota que `r R2*100`% da variância dos dados é explicada pelo modelo. O valor deste novo coeficiente permite concluir que a eliminação das observações com maior impacto no modelo foi benéfica. Pode-se calcular o coeficiente de determinação ajustado igual a $R^2_a=$ `r R2_aju`
+
+
+
+## Conclusões
