@@ -739,8 +739,8 @@ dados2 <- dados2[,-c(1,2,3)]
 
 dados2|>
   rename(
-  "Temperatura do ar máxima" = maxat,  
-  "Temperatura do ar mínima" = minat,
+  "Temperatura máxima doar " = maxat,  
+  "Temperatura mínima do ar " = minat,
   "Temperatura média do ar" = avat,
   "Temperatura máxima do solo" = maxst,
   "Temperatura mínima do solo" = minst,
@@ -1392,7 +1392,8 @@ car::crPlots(mFit2)
 Da Figura 21 verifica-se que as variáveis estão  diretamente correlacionadas com os resíduos da Amônia Perdida, o que por sua vez indica que a inclusão de observações destas variáveis apresentam bom impacto ao modelo.
 
 
-###$R^2_j$ e VIF dos Preditores
+### **$R^2_j$** e VIF dos Preditores
+
 ```{r }
 #| echo: false
 #| warning: false
@@ -1400,16 +1401,52 @@ Da Figura 21 verifica-se que as variáveis estão  diretamente correlacionadas c
 #| fig-height: 9
 
 aux <- colnames(dados2)
-
+aux1 <- aux[-11]
 R2_j <- NULL
 VIF <- NULL
 R2_j[1:10] <- 0
 VIF[1:10] <- 0
+
 for (k in 1:10){
-  reg <- lm(aux[k]~aux[-c(k,11)], data = dados2)
+  aux2 <- aux1[-k]
+  j <- 1
+  for (i in 1:10){
+    if (i==k){
+      colnames(dados2)[i] <- "aux1"
+    }else{
+      colnames(dados2)[i] <- paste("aux_",j, sep="")
+      j <- j+1
+    }
+  }
+  reg <- lm(aux1 ~ aux_1 + aux_2 + aux_3 + aux_4 + aux_5 + aux_6 + aux_7 + aux_8 + aux_9, data = dados2)
   R2_j[k] <- summary(reg)$r.squared
   VIF[k] <- 1/(1-R2_j[k])
 }
+
+colnames(dados2) <- aux
+tab <- cbind(R2_j,VIF)
+rownames(tab) <- c("Temperatura do ar máxima","Temperatura do ar mínima",
+                  "Temperatura média do ar","Temperatura máxima do solo",
+                  "Temperatura mínima do solo","Temperatura média do solo",
+                  "Umidade relativa máxima", "Umidade relativa mínima",
+                  "Umidade relativa média", "Vento total")
+
+tab|>
+  kbl(
+    caption = "$R^2_j$ e VIF dos Preditores",
+    digits = 3,
+    format.args=list(big.mark=".", decimal.mark=","),
+    align = "c", row.names = T, booktabs = T
+  )|>
+  kable_material(c("striped", "hover", "condensed"))|>
+  kable_styling(
+    bootstrap_options = c("striped", "hover",  "condensed"),
+    full_width = F,
+    position = 'center', 
+    latex_options = c("striped", "HOLD_position", "repeat_header")
+  ) |>
+  column_spec(1, bold = T)|>
+  kable_material()
 ```
 
 
